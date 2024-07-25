@@ -1,15 +1,15 @@
-from fastapi import FastAPI, Request
+from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 import io
 import cv2
 
-app = FastAPI()
+router = APIRouter()
 
 templates = Jinja2Templates(directory="templates")
 
 
-@app.get("/", response_class=HTMLResponse)
+@router.get("/streaming", response_class=HTMLResponse)
 async def index(request: Request):
     """Video streaming home page."""
     return templates.TemplateResponse("index.html", {"request": request})
@@ -28,12 +28,7 @@ def gen():
                b'Content-Type: image/jpeg\r\n\r\n' + io_buf.read() + b'\r\n')
 
 
-@app.get("/video_feed")
+@router.get("/video_feed")
 async def video_feed():
     """Video streaming route. Put this in the src attribute of an img tag."""
     return StreamingResponse(gen(), media_type='multipart/x-mixed-replace; boundary=frame')
-
-
-if __name__ == '__main__':
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8081, log_level="debug")
