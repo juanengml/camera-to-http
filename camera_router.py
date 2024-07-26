@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Request, HTTPException
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi import APIRouter, Request, HTTPException, status
+from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 import io
 import cv2
 
@@ -17,6 +18,22 @@ camera_urls = {
     "5": "http://76.174.92.213:81/mjpg/video.mjpg",
     "6": "http://66.76.193.12:8000/mjpg/video.mjpg"
 }
+
+class Camera(BaseModel):
+    id: str
+    url: str
+
+@router.post("/add_camera", status_code=status.HTTP_201_CREATED)
+async def add_camera(camera: Camera):
+    """Add a new camera to the list."""
+    if camera.id in camera_urls:
+        raise HTTPException(status_code=400, detail="Camera ID already exists")
+    camera_urls[camera.id] = camera.url
+    return JSONResponse(content={
+        "status": "cadastrado com sucesso",
+        "link_view": f"http://<your-server-ip>:8081/cameras/video_feed/{camera.id}"
+    })
+
 
 @router.get("/streaming/{camera_id}", response_class=HTMLResponse)
 async def index(request: Request, camera_id: str):
