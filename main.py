@@ -3,7 +3,7 @@ from camera_router import router as camera_router
 
 app = FastAPI()
 
-app.include_router(camera_router, prefix="/camera")
+app.include_router(camera_router, prefix="/cameras")
 
 if __name__ == '__main__':
     import uvicorn
